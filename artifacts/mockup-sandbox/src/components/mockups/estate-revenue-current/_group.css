@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --background: 45 33% 97%; --foreground: 220 24% 15%;
+  --border: 215 18% 88%; --input: 215 18% 82%;
+  --card: 45 33% 99%; --card-foreground: 220 24% 15%;
+  --popover: 45 33% 99%; --popover-foreground: 220 24% 15%;
+  --primary: 70 78% 51%; --primary-foreground: 220 27% 13%;
+  --secondary: 214 23% 93%; --secondary-foreground: 220 24% 15%;
+  --muted: 214 23% 93%; --muted-foreground: 215 12% 46%;
+  --accent: 187 46% 36%; --accent-foreground: 45 33% 97%;
+  --destructive: 2 66% 50%; --destructive-foreground: 45 33% 97%;
+  --ring: 187 46% 36%; --sidebar: 220 27% 13%;
+  --sidebar-foreground: 210 22% 85%; --sidebar-border: 220 20% 22%;
+  --sidebar-accent: 220 22% 19%; --sidebar-accent-foreground: 210 25% 93%;
+  --app-font-sans: 'DM Sans', sans-serif; --app-font-serif: 'Space Grotesk', sans-serif;
+  --app-font-mono: 'DM Mono', monospace; --radius: .5rem;
+}
+.dark { --background: 220 27% 10%; --foreground: 210 25% 93%; --border: 220 20% 24%; --input: 220 20% 30%; --card: 220 25% 14%; --card-foreground: 210 25% 93%; --primary: 70 78% 61%; --primary-foreground: 220 31% 8%; --secondary: 220 20% 21%; --secondary-foreground: 210 25% 93%; --muted: 220 20% 21%; --muted-foreground: 215 16% 65%; --accent: 187 46% 44%; --accent-foreground: 220 31% 8%; --destructive: 2 66% 55%; --destructive-foreground: 45 33% 97%; --ring: 187 46% 44%; --sidebar: 220 31% 8%; --sidebar-foreground: 210 22% 85%; --sidebar-border: 220 20% 18%; --sidebar-accent: 220 22% 16%; --sidebar-accent-foreground: 210 25% 93%; }
+@layer utilities {
+  .font-display { font-family: var(--app-font-serif); }
+  .font-mono { font-family: var(--app-font-mono); }
+  .hairline-grid { background-image: linear-gradient(to right, rgba(28,39,54,.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(28,39,54,.04) 1px, transparent 1px); background-size: 28px 28px; }
+}
+@layer base { body { min-width: 320px; } }

@@ -1,0 +1,601 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: crm
+    description: South African real-estate lead and revenue operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /crm/dashboard:
+    get:
+      operationId: getCrmDashboard
+      tags: [crm]
+      summary: Get revenue and follow-up dashboard metrics
+      responses:
+        "200":
+          description: Dashboard metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CrmDashboard"
+  /crm/leads:
+    get:
+      operationId: listCrmLeads
+      tags: [crm]
+      summary: List and filter real-estate leads
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: segment
+          schema: { type: string, enum: [B2C, B2B] }
+        - in: query
+          name: stage
+          schema: { type: string }
+      responses:
+        "200":
+          description: Leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CrmLead" }
+    post:
+      operationId: createCrmLead
+      tags: [crm]
+      summary: Capture a new lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmLeadInput" }
+      responses:
+        "201":
+          description: Created lead
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmLead" }
+  /crm/leads/{id}:
+    patch:
+      operationId: updateCrmLead
+      tags: [crm]
+      summary: Update a lead or move it through a pipeline
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmLeadUpdate" }
+      responses:
+        "200":
+          description: Updated lead
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmLead" }
+        "404": { description: Lead not found }
+  /crm/leads/{id}/activities:
+    get:
+      operationId: listLeadActivities
+      tags: [crm]
+      summary: Get a lead activity timeline
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Lead activity timeline
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CrmActivity" }
+    post:
+      operationId: createLeadActivity
+      tags: [crm]
+      summary: Record a note, call, follow-up, or other CRM activity
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmActivityInput" }
+      responses:
+        "201":
+          description: Recorded activity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmActivity" }
+  /crm/appointments:
+    get:
+      operationId: listCrmAppointments
+      tags: [crm]
+      summary: List upcoming and recent appointments
+      responses:
+        "200":
+          description: Appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CrmAppointment" }
+    post:
+      operationId: createCrmAppointment
+      tags: [crm]
+      summary: Book an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmAppointmentInput" }
+      responses:
+        "201":
+          description: Created appointment
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmAppointment" }
+  /crm/automations:
+    get:
+      operationId: listCrmAutomations
+      tags: [crm]
+      summary: List follow-up and re-engagement automations
+      responses:
+        "200":
+          description: Automation recipes
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CrmAutomation" }
+  /crm/automations/{id}:
+    patch:
+      operationId: updateCrmAutomation
+      tags: [crm]
+      summary: Enable or pause an automation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmAutomationUpdate" }
+      responses:
+        "200":
+          description: Updated automation
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmAutomation" }
+  /crm/reports:
+    get:
+      operationId: getCrmReports
+      tags: [crm]
+      summary: Get pipeline, source, and monthly revenue reporting
+      responses:
+        "200":
+          description: Reporting data
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmReport" }
+  /crm/qualify:
+    post:
+      operationId: qualifyCrmLead
+      tags: [crm]
+      summary: AI-score a captured lead and draft an appropriate next step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmQualificationInput" }
+      responses:
+        "200":
+          description: Qualification and draft follow-up
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmQualification" }
+  /crm/workspaces:
+    get:
+      operationId: listCrmWorkspaces
+      tags: [crm]
+      summary: List workspaces available to the current user
+      responses:
+        "200":
+          description: User workspaces and current selection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmWorkspaceList" }
+    post:
+      operationId: createCrmWorkspace
+      tags: [crm]
+      summary: Create an agency workspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmWorkspaceInput" }
+      responses:
+        "201":
+          description: Created agency workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmWorkspace" }
+  /crm/workspaces/{workspaceId}/members:
+    get:
+      operationId: listCrmWorkspaceMembers
+      tags: [crm]
+      summary: List members and roles in a workspace
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Workspace members
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CrmWorkspaceMember" }
+    post:
+      operationId: inviteCrmWorkspaceMember
+      tags: [crm]
+      summary: Send a verified-email-bound workspace invitation
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmWorkspaceInvitationInput" }
+      responses:
+        "201":
+          description: Invitation email sent with the one-time acceptance code
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmWorkspaceInvitation" }
+  /crm/workspaces/{workspaceId}/members/{membershipId}:
+    patch:
+      operationId: updateCrmWorkspaceMember
+      tags: [crm]
+      summary: Change a workspace member's role
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: membershipId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmWorkspaceMemberUpdate" }
+      responses:
+        "200":
+          description: Updated workspace member
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmWorkspaceMember" }
+    delete:
+      operationId: removeCrmWorkspaceMember
+      tags: [crm]
+      summary: Remove a member from a workspace
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: membershipId
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Member removed }
+  /crm/workspace-invitations/accept:
+    post:
+      operationId: acceptCrmWorkspaceInvitation
+      tags: [crm]
+      summary: Accept an invitation for the signed-in verified email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CrmWorkspaceInvitationAcceptInput" }
+      responses:
+        "200":
+          description: Joined workspace
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CrmWorkspace" }
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    CrmLead:
+      type: object
+      required: [id, firstName, lastName, segment, intent, source, stage, city, province, score, consent, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        segment: { type: string, enum: [B2C, B2B] }
+        intent: { type: string, enum: [Buyer, Seller, Tenant, Landlord, Developer, Partner] }
+        source: { type: string }
+        stage: { type: string }
+        city: { type: string }
+        province: { type: string }
+        budgetMin: { type: ["number", "null"] }
+        budgetMax: { type: ["number", "null"] }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        revenueEstimate: { type: ["number", "null"] }
+        revenueWon: { type: ["number", "null"] }
+        consent: { type: boolean }
+        nextAction: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CrmLeadInput:
+      type: object
+      required: [firstName, lastName, segment, intent, source, city, province, consent]
+      properties:
+        firstName: { type: string, minLength: 1 }
+        lastName: { type: string, minLength: 1 }
+        email: { type: ["string", "null"], format: email }
+        phone: { type: ["string", "null"] }
+        segment: { type: string, enum: [B2C, B2B] }
+        intent: { type: string, enum: [Buyer, Seller, Tenant, Landlord, Developer, Partner] }
+        source: { type: string }
+        stage: { type: string }
+        city: { type: string }
+        province: { type: string }
+        budgetMin: { type: ["number", "null"] }
+        budgetMax: { type: ["number", "null"] }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        revenueEstimate: { type: ["number", "null"] }
+        revenueWon: { type: ["number", "null"] }
+        consent: { type: boolean }
+        nextAction: { type: ["string", "null"] }
+    CrmLeadUpdate:
+      type: object
+      properties:
+        stage: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        consent: { type: boolean }
+        nextAction: { type: ["string", "null"] }
+        city: { type: string }
+        province: { type: string }
+        budgetMin: { type: ["number", "null"] }
+        budgetMax: { type: ["number", "null"] }
+        revenueEstimate: { type: ["number", "null"] }
+        revenueWon: { type: ["number", "null"] }
+    CrmActivity:
+      type: object
+      required: [id, leadId, kind, title, detail, createdAt]
+      properties:
+        id: { type: integer }
+        leadId: { type: integer }
+        kind: { type: string }
+        title: { type: string }
+        detail: { type: string }
+        createdAt: { type: string, format: date-time }
+    CrmActivityInput:
+      type: object
+      required: [kind, title, detail]
+      properties:
+        kind: { type: string }
+        title: { type: string, minLength: 1 }
+        detail: { type: string }
+    CrmAppointment:
+      type: object
+      required: [id, leadId, leadName, title, startsAt, type, status, location]
+      properties:
+        id: { type: integer }
+        leadId: { type: integer }
+        leadName: { type: string }
+        title: { type: string }
+        startsAt: { type: string, format: date-time }
+        type: { type: string }
+        status: { type: string }
+        location: { type: string }
+    CrmAppointmentInput:
+      type: object
+      required: [leadId, title, startsAt, type, location]
+      properties:
+        leadId: { type: integer }
+        title: { type: string, minLength: 1 }
+        startsAt: { type: string, format: date-time }
+        type: { type: string }
+        location: { type: string }
+    CrmAutomation:
+      type: object
+      required: [id, name, description, trigger, channel, active, sentCount, category]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        trigger: { type: string }
+        channel: { type: string }
+        active: { type: boolean }
+        sentCount: { type: integer }
+        category: { type: string }
+    CrmAutomationUpdate:
+      type: object
+      required: [active]
+      properties:
+        active: { type: boolean }
+    CrmDashboard:
+      type: object
+      required: [newLeads, qualified, appointments, pipelineValue, revenueWon, followUpsDue, stageCounts, upcomingAppointments]
+      properties:
+        newLeads: { type: integer }
+        qualified: { type: integer }
+        appointments: { type: integer }
+        pipelineValue: { type: number }
+        revenueWon: { type: number }
+        followUpsDue: { type: integer }
+        stageCounts:
+          type: array
+          items:
+            type: object
+            required: [stage, count]
+            properties:
+              stage: { type: string }
+              count: { type: integer }
+        upcomingAppointments:
+          type: array
+          items: { $ref: "#/components/schemas/CrmAppointment" }
+    CrmReport:
+      type: object
+      required: [monthlyRevenue, leadSources, funnel, totalLeads, conversionRate]
+      properties:
+        monthlyRevenue:
+          type: array
+          items:
+            type: object
+            required: [month, revenue]
+            properties:
+              month: { type: string }
+              revenue: { type: number }
+        leadSources:
+          type: array
+          items:
+            type: object
+            required: [source, leads]
+            properties:
+              source: { type: string }
+              leads: { type: integer }
+        funnel:
+          type: array
+          items:
+            type: object
+            required: [stage, leads]
+            properties:
+              stage: { type: string }
+              leads: { type: integer }
+        totalLeads: { type: integer }
+        conversionRate: { type: number }
+    CrmQualificationInput:
+      type: object
+      required: [firstName, lastName, segment, intent, source, city, province, notes]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        segment: { type: string, enum: [B2C, B2B] }
+        intent: { type: string, enum: [Buyer, Seller, Tenant, Landlord, Developer, Partner] }
+        source: { type: string }
+        city: { type: string }
+        province: { type: string }
+        budgetMin: { type: ["number", "null"] }
+        budgetMax: { type: ["number", "null"] }
+        notes: { type: string }
+    CrmQualification:
+      type: object
+      required: [score, summary, recommendedStage, nextAction, draftMessage]
+      properties:
+        score: { type: integer, minimum: 0, maximum: 100 }
+        summary: { type: string }
+        recommendedStage: { type: string }
+        nextAction: { type: string }
+        draftMessage: { type: string }
+    CrmWorkspace:
+      type: object
+      required: [id, name, kind, role, memberCount, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        kind: { type: string, enum: [personal, agency] }
+        role: { type: string, enum: [owner, admin, agent, viewer] }
+        memberCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+    CrmWorkspaceList:
+      type: object
+      required: [currentWorkspaceId, workspaces]
+      properties:
+        currentWorkspaceId: { type: integer }
+        workspaces:
+          type: array
+          items: { $ref: "#/components/schemas/CrmWorkspace" }
+    CrmWorkspaceInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 80 }
+    CrmWorkspaceMember:
+      type: object
+      required: [id, userId, email, role, joinedAt, isCurrentUser]
+      properties:
+        id: { type: integer }
+        userId: { type: string }
+        email: { type: ["string", "null"] }
+        role: { type: string, enum: [owner, admin, agent, viewer] }
+        joinedAt: { type: string, format: date-time }
+        isCurrentUser: { type: boolean }
+    CrmWorkspaceInvitationInput:
+      type: object
+      required: [email, role]
+      properties:
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, agent, viewer] }
+    CrmWorkspaceInvitation:
+      type: object
+      required: [email, role, code, expiresAt]
+      properties:
+        email: { type: string, format: email }
+        role: { type: string, enum: [admin, agent, viewer] }
+        code: { type: string }
+        expiresAt: { type: string, format: date-time }
+    CrmWorkspaceMemberUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string, enum: [admin, agent, viewer] }
+    CrmWorkspaceInvitationAcceptInput:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 20 }
+

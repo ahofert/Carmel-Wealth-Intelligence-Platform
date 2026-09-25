@@ -1,0 +1,3 @@
+- [Workspace package installs](pnpm-targeted-installs.md) — use pnpm's workspace filter when the package helper targets the monorepo root.
+- [React version cache](vite-react-cache.md) — if Vite still reports stale React peers, verify resolution before changing versions again.
+- [TypeScript project references](ts-project-reference-checks.md) — build referenced workspace libraries before directly typechecking a consumer package.

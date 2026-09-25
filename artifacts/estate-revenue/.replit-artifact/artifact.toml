@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Estate Revenue Platform"
+description = "A South African real-estate revenue system for capturing and qualifying leads, managing B2C and B2B pipelines, automating follow-ups and appointments, and tracking revenue with POPIA-aware consent controls."
+version = "1.0.0"
+id = "artifacts/estate-revenue"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21397
+
+[services.development]
+run = "pnpm --filter @workspace/estate-revenue run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/estate-revenue", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/estate-revenue/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21397"
+BASE_PATH = "/"
